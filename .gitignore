@@ -205,3 +205,69 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ========================================
+# Project-specific ignores for Minesweeper CNN
+# ========================================
+
+# TensorFlow/Keras model files
+*.h5
+*.hdf5
+*.pb
+*.keras
+saved_model/
+checkpoints/
+*.ckpt
+*.ckpt.*
+*.weights.h5
+
+# Training logs
+logs/
+tensorboard_logs/
+runs/
+
+# Data files (raw and processed)
+data/raw/*.csv
+data/raw/*.npy
+data/raw/*.npz
+data/processed/*.npy
+data/processed/*.npz
+*.pkl
+*.pickle
+
+# Saved models (these can be large!)
+data/models/*.h5
+data/models/*.keras
+data/models/*.pb
+data/models/saved_model/
+
+# Experiment tracking
+mlruns/
+wandb/
+.wandb/
+
+# Large visualization outputs (keep examples in docs/images/)
+*.png
+*.jpg
+*.gif
+!docs/images/*.png
+!docs/images/*.jpg
+!README_images/*.png
+
+# Jupyter Notebook outputs (already has .ipynb_checkpoints, but add this)
+*.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# IDE-specific (uncomment if your team uses these)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary experiment files
+experiments/
+scratch/
+temp/
+tmp/
