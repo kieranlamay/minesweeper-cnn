@@ -18,9 +18,9 @@ pip install -r requirements.txt
 
 ```
 
-## Intermediate Project Report
+# Intermediate Project Report
 
-# [Title: Summarizes the main idea of your project]
+## [Title: Summarizes the main idea of your project]
 
 ## Who
 
