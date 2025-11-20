@@ -3,7 +3,7 @@ import gym
 from gym import spaces
 import pygame
 from constants import *
-from init_pygame import init_game, load_assets
+from game.init_game import init_game, load_assets
 
 
 class MinesweeperEnv(gym.Env):
@@ -330,9 +330,9 @@ class MinesweeperEnv(gym.Env):
 
                 # Draw each brick based on its state
                 rect = pygame.Rect(
-                    board_origin[0] + j * brick_size,
-                    board_origin[1] + i * brick_size,
-                    brick_size, brick_size
+                    BOARD_ORIGIN[0] + j * BRICK_SIZE,
+                    BOARD_ORIGIN[1] + i * BRICK_SIZE,
+                    BRICK_SIZE, BRICK_SIZE
                 )
                 pygame.draw.rect(self.screen, GRAY, rect)
                 pygame.draw.rect(self.screen, WHITE, rect, 3)
@@ -359,10 +359,10 @@ class MinesweeperEnv(gym.Env):
         """ Update the status panel showing current game status. """
 
         # Check game status
-        text = "Win" if (self.done and self.info["status"] == "win") \
-            else ("Lose" if self.done and self.info["status"] == "lose" else "Playing")
-        color = GREEN if (self.done and self.info["status"] == "win") \
-            else (RED if self.done and self.info["status"] == "lose" else GRAY)
+        text = self.info.get("status", "playing").capitalize() if not self.done else \
+               ("Win" if self.check_game_status() == GameState.WIN else "Lose")
+        color = GREEN if (self.done and text == "Win") \
+            else (RED if self.done and text == "Lose" else GRAY)
         text = "Status: " + text
         
         # Render status text with appropriate color

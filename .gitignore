@@ -247,7 +247,6 @@ wandb/
 .wandb/
 
 # Large visualization outputs (keep examples in docs/images/)
-*.png
 *.jpg
 *.gif
 !docs/images/*.png

@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 class BrickType(IntEnum):
     MINE = -2
     UNKNOWN = -1
