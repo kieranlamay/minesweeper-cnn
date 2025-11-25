@@ -13,16 +13,9 @@ from typing import Tuple, List
 
 import numpy as np
 
-try:
-    # when used as package
-    from src.encoding.full_encoding import encode_full, make_action_mask
-    from game.game import MinesweeperEnv
-    from constants import BrickType
-except Exception:
-    # fallback for script execution
-    from src.encoding.full_encoding import encode_full, make_action_mask
-    from src.game.game import MinesweeperEnv
-    from src.constants import BrickType
+from src.encoding.full_encoding import encode_full, make_action_mask
+from src.game.game import MinesweeperEnv
+from src.constants import BrickType
 
 
 def _to_one_hot(index: int, size: int) -> np.ndarray:
