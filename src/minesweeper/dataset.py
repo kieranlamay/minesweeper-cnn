@@ -77,15 +77,21 @@ def generate_examples(n_examples: int,
 
         if len(legal_inds) == 0:
             # no legal moves (shouldn't happen) — pick first
+            # produce a safe default label (one-hot first index)
             label_idx = 0
             value = 0.0
+            onehot = _to_one_hot(label_idx, flat_size)
         elif strategy == 'random':
             label_idx = int(rng.choice(legal_inds))
             value = 0.0
+            onehot = _to_one_hot(label_idx, flat_size)
+        elif strategy == 'mine_map':
+            # label is the true mine map (multi-hot): 1 if cell contains a mine
+            mine_map = (counts == BrickType.MINE).astype(np.float32).reshape(-1)
+            onehot = mine_map
+            value = 0.0
         else:
             raise ValueError(f"Unsupported strategy: {strategy}")
-
-        onehot = _to_one_hot(label_idx, flat_size)
 
         inputs.append(enc)
         masks.append(mask)
@@ -112,7 +118,9 @@ def _cli():
     p.add_argument('--rows', type=int, default=6)
     p.add_argument('--cols', type=int, default=6)
     p.add_argument('--mines', type=int, default=4)
-    p.add_argument('--strategy', choices=['random'], default='random')
+    p.add_argument('--strategy', choices=['random', 'mine_map'], default='random',
+                   help=("Labeling strategy: 'random' = random legal click (one-hot),"
+                         " 'mine_map' = ground-truth mine map (multi-hot)"))
     p.add_argument('--seed', type=int, default=0)
     args = p.parse_args()
     X, M, Y, V = generate_examples(args.n, args.rows, args.cols, args.mines, args.strategy, seed=args.seed)
