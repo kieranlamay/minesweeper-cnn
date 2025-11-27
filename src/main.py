@@ -1,6 +1,8 @@
 import pygame
-from game.game import MinesweeperEnv
-from constants import BOARD_ORIGIN, BRICK_SIZE
+from src.game.game import MinesweeperEnv
+from src.constants import BOARD_ORIGIN, BRICK_SIZE
+from src.training.train import Agent
+from src.models.cnn import CNN
 
 
 def coord_to_action(x, y, env):
@@ -24,10 +26,14 @@ def get_cell_from_mouse(pos, env):
 
 
 def main():
+
+
     pygame.init()
 
     # Create environment
     env = MinesweeperEnv(mode="human")
+    agent = Agent(env, model=CNN(), num_samples=320, epochs=10)
+    agent.train()
     obs, info = env.reset()
 
     running = True
