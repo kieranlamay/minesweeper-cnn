@@ -33,8 +33,18 @@ def main():
     # Create environment
     env = MinesweeperEnv(mode="human")
     agent = Agent(env, model=CNN(), num_samples=320, epochs=10)
-    agent.train()
     obs, info = env.reset()
+
+    num_updates = 50  
+    update_count = 0
+
+    while update_count < num_updates:
+        while agent.current_sample < agent.num_samples:
+            agent.play()  
+
+        agent.current_sample = 0  
+        update_count += 1
+        print(f"Completed update {update_count}/{num_updates}")
 
     running = True
     clock = pygame.time.Clock()
