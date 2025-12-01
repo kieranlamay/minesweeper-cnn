@@ -1,14 +1,14 @@
 import tensorflow as tf
-
+from tensorflow.keras.losses import BinaryCrossentropy
 
 class CNN(tf.keras.Model):
     def __init__(self):
         super(CNN, self).__init__()
 
         self.model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3)),
-            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3)),
-            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3)),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same"),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same"),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same"),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(units = 256, activation = 'relu'),
             tf.keras.layers.Dense(units = 256, activation = 'relu'),
@@ -25,14 +25,34 @@ class CNN(tf.keras.Model):
 
         outputs = self.model(inputs)
         return outputs
-    
-    def loss(self, predictions: tf.Tensor, targets: tf.Tensor) -> tf.Tensor:
+
+    def masked_bce_loss(self, predictions: tf.Tensor, targets: tf.Tensor, mask: tf.Tensor) -> tf.Tensor:
         """
-        Computes the cross-entropy loss between predicted and target action values.
-        :predictions: tf.Tensor of shape (batch_size, 36) representing the predicted action values.
-        :targets: tf.Tensor of shape (batch_size, 36) representing the target action values.
-        :returns: tf.Tensor representing the computed loss.
+        Masked binary cross-entropy loss.
+        
+        predictions: (batch, H*W)
+        targets:     (batch, H*W)
+        mask:        (batch, H*W) with 1 for valid (unrevealed) tiles, 0 for ignored tiles
         """
-        loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        loss = loss_fn(targets, predictions)
+
+        # BCE per element
+        bce_fn = BinaryCrossentropy(
+            from_logits=True,
+            reduction=tf.keras.losses.Reduction.NONE
+        )
+
+        predictions = tf.expand_dims(predictions, axis=-1)   # (batch, 36, 1)
+        targets     = tf.expand_dims(targets, axis=-1)       # (batch, 36, 1)
+
+        bce = bce_fn(targets, predictions)
+
+        # Convert mask to float
+        mask = tf.cast(mask, tf.float32)
+
+        # Apply mask
+        masked_bce = bce * mask
+
+        # Normalize by number of valid cells
+        loss = tf.reduce_sum(masked_bce) / tf.reduce_sum(mask)
+
         return loss

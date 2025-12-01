@@ -2,8 +2,8 @@ import numpy as np
 import gym
 from gym import spaces
 import pygame
-from src.constants import *
-from src.game.init_game import init_game, load_assets
+from constants import *
+from game.init_game import init_game, load_assets
 
 
 class MinesweeperEnv(gym.Env):

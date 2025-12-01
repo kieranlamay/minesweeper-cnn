@@ -1,6 +1,6 @@
 # init_game.py
 import pygame
-from src.constants import *
+from constants import *
 
 def init_game():
     pygame.init()
