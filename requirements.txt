@@ -1,5 +1,5 @@
 # Core dependencies
-tensorflow>=2.13.0,<2.16.0
+tensorflow>=2.13.0,<2.20.0
 numpy>=1.24.0,<2.0.0
 
 # Data processing
@@ -24,5 +24,5 @@ tqdm>=4.65.0
 pyyaml>=6.0
 
 # Optional: Experiment tracking
-# tensorboard>=2.13.0
-# wandb>=0.15.0
+tensorboard>=2.13.0
+wandb>=0.15.0

@@ -1,8 +1,17 @@
 import pygame
+import os
 from game.game import MinesweeperEnv
 from constants import BOARD_ORIGIN, BRICK_SIZE
 from training.train import Agent
 from models.cnn import CNN
+
+# Optional WandB init — run in offline mode by default
+try:
+    import wandb
+    WANDB_MODE = os.environ.get("WANDB_MODE", "offline")
+    wandb.init(project="minesweeper-cnn", mode=WANDB_MODE)
+except Exception:
+    wandb = None
 
 
 # def coord_to_action(x, y, env):
@@ -42,6 +51,13 @@ def main():
             update_count += 1
             print(f"Completed update {update_count}/{num_updates}.")
             agent.validate()
+
+    # finish wandb run if active
+    try:
+        if wandb is not None:
+            wandb.finish()
+    except Exception:
+        pass
 
     # pygame.init()
     # running = True

@@ -1,9 +1,18 @@
+import os
 import tensorflow as tf
 import numpy as np
 from models.cnn import CNN
 from minesweeper.dataset import generate_examples
 from encoding.full_encoding import encode_full, make_action_mask
 from constants import BrickType
+
+# Optional Weights & Biases integration (graceful fallback if not installed)
+try:
+    import wandb as _wandb
+    WAND_AVAILABLE = True
+except Exception:
+    _wandb = None
+    WAND_AVAILABLE = False
 
 
 def convert_board(board):
@@ -149,7 +158,26 @@ class Agent:
                 epoch_loss.update_state(loss)
 
             if epoch % 2 == 0 or epoch == self.epochs - 1:
-                print(f"Epoch {epoch + 1}, Loss: {epoch_loss.result().numpy():.4f}")
+                val = float(epoch_loss.result().numpy())
+                print(f"Epoch {epoch + 1}, Loss: {val:.4f}")
+                if WAND_AVAILABLE:
+                    try:
+                        _wandb.log({"train/epoch_loss": val, "epoch": epoch + 1})
+                    except Exception:
+                        pass
+
+        # save a checkpoint after training round
+        try:
+            os.makedirs("models", exist_ok=True)
+            ckpt_path = os.path.join("models", "minesweeper_cnn_latest.h5")
+            self.model.save(ckpt_path)
+            if WAND_AVAILABLE:
+                try:
+                    _wandb.save(ckpt_path)
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
         return loss
     
@@ -246,6 +274,12 @@ class Agent:
         print(f"\nVALIDATION — {num_games} Games")
         print(f"Win Rate: {win_rate:.1f}%")
         print(f"Avg Steps Survived: {avg_steps:.2f}\n")
+
+        if WAND_AVAILABLE:
+            try:
+                _wandb.log({"eval/win_rate": win_rate, "eval/avg_steps": avg_steps})
+            except Exception:
+                pass
 
         return win_rate, avg_steps
 

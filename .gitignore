@@ -270,3 +270,7 @@ experiments/
 scratch/
 temp/
 tmp/
+
+# Temporary compatibility shim for Python 3.12 `distutils` import used during TF debugging
+# Ignore this so teammates don't commit the local shim file
+src/distutils/
