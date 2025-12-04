@@ -38,19 +38,29 @@ def main():
 
     # Create environment
     env = MinesweeperEnv(mode="human")
-    agent = Agent(env, model=CNN())
-    obs, info = env.reset()
+    agent = Agent(env, model=CNN(), num_samples=640, batch_size=128, epochs=20)
+    env.reset()
 
-    num_updates = 50
+    # Initial training with random data
+    num_updates_random_data = 10
     update_count = 0
-
-    while update_count < num_updates:
+    while update_count < num_updates_random_data:
+        # Initial training with data loading
+        agent.train(load_data=True)
+        agent.validate()
+        update_count += 1
+        print(f"Completed update {update_count}/{num_updates_random_data}.")
+            
+    # Self-play training
+    num_updates_self_play = 0
+    update_count = 0
+    while update_count < num_updates_self_play:
+        # Generate new data and continue training
         agent.play()
-
         if agent.current_sample == 0:
-            update_count += 1
-            print(f"Completed update {update_count}/{num_updates}.")
             agent.validate()
+            update_count += 1
+            print(f"Completed self-play update {update_count}/{num_updates_self_play}.")
 
     # finish wandb run if active
     try:

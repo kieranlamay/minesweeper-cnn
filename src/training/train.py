@@ -6,7 +6,7 @@ from minesweeper.dataset import generate_examples
 from encoding.full_encoding import encode_full, make_action_mask
 from constants import BrickType
 
-# Optional Weights & Biases integration (graceful fallback if not installed)
+# Optional Weights & Biases integration
 try:
     import wandb as _wandb
     WAND_AVAILABLE = True
@@ -21,13 +21,13 @@ def convert_board(board):
 
 
 class Agent:
-    def __init__(self, env, model, num_samples = 640, epochs = 10):
+    def __init__(self, env, model, num_samples = 640, batch_size = 64, epochs = 10):
         self.model = model
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         self.env = env
         self.num_samples = num_samples
         self.epochs = epochs
-        self.batch_size = 64
+        self.batch_size = batch_size
         self.state = encode_full(self.env.player_board,
                                  self.env.player_board != BrickType.UNKNOWN,
                                  channels_first=False)
@@ -123,12 +123,27 @@ class Agent:
             )
         
 
-    def train(self):
+    def train(self, load_data: bool = False):
         """
         Train the CNN model using generated dataset examples.
         
         Returns:
             loss: The final loss value after training."""
+
+        if load_data:
+            # Load dataset from file
+            features, masks, labels, _ = generate_examples(
+                n_examples=64000,
+                rows=self.env.num_rows,
+                cols=self.env.num_cols,
+                mines=self.env.num_mines,
+                strategy='mine_map',
+                max_init_moves=7,
+                seed=42
+            )
+            self.features = features
+            self.labels = labels
+            self.masks = masks
 
         features = tf.convert_to_tensor(self.features, dtype=tf.float32)
         labels = tf.convert_to_tensor(self.labels, dtype=tf.float32)
@@ -151,13 +166,13 @@ class Agent:
                 
                 with tf.GradientTape() as tape:
                     predictions = self.model(batch_features, isTesting=False)
-                    loss = self.model.masked_bce_loss(predictions, batch_labels, batch_masks)
+                    loss = self.model.masked_weighted_bce_loss(predictions, batch_labels, batch_masks)
                  
                 gradients = tape.gradient(loss, self.model.trainable_variables)
                 self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
                 epoch_loss.update_state(loss)
 
-            if epoch % 2 == 0 or epoch == self.epochs - 1:
+            if epoch % 5 == 0 or epoch == self.epochs - 1:
                 val = float(epoch_loss.result().numpy())
                 print(f"Epoch {epoch + 1}, Loss: {val:.4f}")
                 if WAND_AVAILABLE:
@@ -238,7 +253,7 @@ class Agent:
         return action
 
 
-    def validate(self, num_games=100):
+    def validate(self, num_games=1000):
         """
         Plays `num_games` complete Minesweeper games using the current CNN.
         Returns win rate and average steps survived.
@@ -282,5 +297,3 @@ class Agent:
                 pass
 
         return win_rate, avg_steps
-
-        

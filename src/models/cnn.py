@@ -6,9 +6,9 @@ class CNN(tf.keras.Model):
         super(CNN, self).__init__()
 
         self.model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same"),
-            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same"),
-            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same"),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same", activation='relu'),
+            tf.keras.layers.Conv2D(filters = 64, kernel_size = (3,3), padding="same", activation='relu'),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(units = 256, activation = 'relu'),
             tf.keras.layers.Dense(units = 256, activation = 'relu'),
@@ -56,3 +56,20 @@ class CNN(tf.keras.Model):
         loss = tf.reduce_sum(masked_bce) / tf.reduce_sum(mask)
 
         return loss
+    
+    import tensorflow as tf
+
+    def masked_weighted_bce_loss(self, logits, labels, mask, pos_weight=None, eps=1e-8):
+        # logits, labels, mask: tensors shape (B, H*W)
+        labels = tf.cast(labels, tf.float32)
+        mask = tf.cast(mask, tf.float32)
+
+        if pos_weight is None:
+            pos = tf.reduce_sum(labels * mask)
+            neg = tf.reduce_sum((1.0 - labels) * mask)
+            pos_weight = tf.where(pos > 0, neg / (pos + eps), 1.0)
+
+        per_entry = tf.nn.weighted_cross_entropy_with_logits(labels=labels, logits=logits, pos_weight=pos_weight)
+        per_entry = per_entry * mask
+        normalizer = tf.reduce_sum(mask) + eps
+        return tf.reduce_sum(per_entry) / normalizer
