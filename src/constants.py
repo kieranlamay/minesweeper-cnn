@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 class BrickType(IntEnum):
     MINE = -2
     UNKNOWN = -1
@@ -39,10 +41,10 @@ WINDOW_HEIGHT = BOARD_PADDING + BOARD_HEIGHT + BOARD_PADDING
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 
 # Pygame Visual Constants
-FLAG_IMG_PATH = "assets/images/flag.png"
-MINE_IMG_PATH = "assets/images/mine.png"
+FLAG_IMG_PATH = "src/assets/images/flag.png"
+MINE_IMG_PATH = "src/assets/images/mine.png"
 
-OPEN_SANS = "assets/fonts/simkai.ttf"
+OPEN_SANS = "src/assets/fonts/simkai.ttf"
 
 BLACK = (0, 0, 0)
 GRAY = (180, 180, 180)

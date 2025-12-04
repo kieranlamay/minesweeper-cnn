@@ -4,7 +4,7 @@ from constants import *
 
 def init_game():
     pygame.init()
-    screen = pygame.display.set_mode(WIN_SIZE)
+    screen = pygame.display.set_mode(WINDOW_SIZE)
     return screen
 
 def load_assets():
