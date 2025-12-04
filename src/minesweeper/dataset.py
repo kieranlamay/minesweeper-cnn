@@ -1,15 +1,15 @@
-"""Dataset generator utilities compatible with the original paper repo.
+"""Dataset generator utilities.
 
 Produces channel-first encodings and one-hot action labels (length H*W).
 Default labeling strategy is `random`. Output is a compressed `.npz` file
-with fields: `inputs` (N,C,H,W), `masks` (N,H*W), `labels` (N,H*W), `values` (N,) .
+with fields: `inputs` (N,H,W,C), `masks` (N,H*W), `labels` (N,H*W), `values` (N,) .
 """
 from __future__ import annotations
 
 import argparse
-import copy
 import os
 from typing import Tuple, List
+from tqdm import tqdm
 
 import numpy as np
 
@@ -28,14 +28,13 @@ def generate_examples(n_examples: int,
                       rows: int = 6,
                       cols: int = 6,
                       mines: int = 4,
-                      strategy: str = 'random',
-                      rollout_samples: int = 20,
-                      max_init_moves: int = 5,
+                      strategy: str = 'mine_map',
+                      max_init_moves: int = 6,
                       seed: int = 0) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Generate dataset examples.
 
     Returns:
-      inputs: (N, C, H, W) float32
+      inputs: (N, H, W, C) float32
       masks:  (N, H*W) uint8
       labels: (N, H*W) float32 (one-hot)
       values: (N,) float32 (zeros if not used)
@@ -51,7 +50,7 @@ def generate_examples(n_examples: int,
 
     flat_size = rows * cols
 
-    for i in range(n_examples):
+    for i in tqdm(range(n_examples), desc="Generating Examples"):
         env.reset()
 
         # optional warm-up moves
@@ -69,8 +68,8 @@ def generate_examples(n_examples: int,
         counts = env.board.copy()
         revealed = (env.player_board != BrickType.UNKNOWN)
 
-        # encode channel-first to match original repo
-        enc = encode_full(counts, revealed, channels_first=True).astype(np.float32)
+        # encode channel-last to match our implementation
+        enc = encode_full(counts, revealed, channels_first=False).astype(np.float32)
 
         mask = make_action_mask(revealed).astype(np.uint8).reshape(-1)
         legal_inds = np.where(mask == 1)[0]
@@ -114,7 +113,7 @@ def save_npz(path: str, X: np.ndarray, M: np.ndarray, Y: np.ndarray, V: np.ndarr
 def _cli():
     p = argparse.ArgumentParser(description='Generate Minesweeper dataset (.npz)')
     p.add_argument('--out', required=True)
-    p.add_argument('--n', type=int, default=1000)
+    p.add_argument('--n', type=int, default=10000)
     p.add_argument('--rows', type=int, default=6)
     p.add_argument('--cols', type=int, default=6)
     p.add_argument('--mines', type=int, default=4)
