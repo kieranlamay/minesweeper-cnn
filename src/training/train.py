@@ -1,4 +1,5 @@
 import os
+import time
 import tensorflow as tf
 import numpy as np
 from models.cnn import CNN
@@ -131,7 +132,7 @@ class Agent:
             loss: The final loss value after training."""
 
         if load_data:
-            # Load dataset from file
+            # Generate fresh random dataset for this update
             features, masks, labels, _ = generate_examples(
                 n_examples=64000,
                 rows=self.env.num_rows,
@@ -139,7 +140,7 @@ class Agent:
                 mines=self.env.num_mines,
                 strategy='mine_map',
                 max_init_moves=7,
-                seed=42
+                seed=int(time.time() * 1000000) % (2**32)
             )
             self.features = features
             self.labels = labels
